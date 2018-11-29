@@ -10,30 +10,29 @@ let scoreO = 0;
 
 setNextPlayer('X');
 
-
-// Switches between X and O when an input is clicked
+// Prevents making any more moves when winner is found/an input is already clicked
 $('input').on('click', function(event) {
-  let clicked = event.target;
-  if (winner) {
+  if (winner || $(event.target).val().trim().length) {
     return;
-  } else if ($(clicked).val() === 'X' || $(clicked).val() === 'O') {
-
-  } else if (nextPlayer === 'X') {
-    $(clicked).attr('value', nextPlayer);
-    clickStyling(clicked);
-    $(event.target).val(nextPlayer);
-    setNextPlayer('O');
-    totalMoves = totalMoves - 1;
   } else {
-    clickStyling(clicked);
-    $(event.target).val(nextPlayer);
-    setNextPlayer('X');
-    totalMoves = totalMoves - 1;
+    makeMove(nextPlayer, event.target);
   }
-  isWinnerX();
-  isWinnerO();
+  isWinner('X');
+  isWinner('O');
   isWinnerNobody();
 });
+
+// Switches between X and O when a player makes a move
+function makeMove(player, button) {
+  $(button).val(nextPlayer);
+  clickStyling(button);
+  if (player === 'X') {
+    setNextPlayer('O');
+  } else {
+    setNextPlayer('X');
+  }
+  totalMoves = totalMoves - 1;
+}
 
 // Sets styling on clicked buttons
 function clickStyling(clicked) {
@@ -65,7 +64,7 @@ $('.restart').on('click', function(event) {
    reset();
 });
 
-// When the Reset Score button is clicked it resets score if desired
+// When the Reset Score button is clicked it resets score
 $('.reset').on('click', function(event) {
   $('#xScore').text('Player X: ');
   $('#oScore').text('Player O: ');
@@ -74,32 +73,23 @@ $('.reset').on('click', function(event) {
   reset();
 });
 
-/* Function that sets styling on winning buttons/prevents any more moves &
-prints out that X won with a gif */
-function xWon(withButtons) {
-    let img = $('<img src="winnerX.gif">');
-    $('.winner').append(img);
+// Function that sets styling on winning buttons & prints out which player won with a gif
+function setWinner(ourWinner, withButtons) {
     $('.restart').css('margin-top', '0px');
     $('.playarea').removeClass('in-progress');
-    $(withButtons).css('background', 'rgba(222, 111, 180, 0.71)');
-    $(withButtons).css({
-        transform: 'scale(1.02)',
-      });
-    winner = 'X';
-    setScore();
-}
-
-/* Function that sets styling on winning buttons/prevents any more moves &
-prints out that O won with a gif */
-function oWon(withButtons) {
-    let img = $('<img src="winnerO.gif">');
-    $('.winner').append(img);
-    $('.restart').css('margin-top', '0px');
-    $('.playarea').removeClass('in-progress');
-    $(withButtons).css('background', 'rgba(124, 175, 208, 0.73)');
-    $(withButtons).fadeOut(0);
-    $(withButtons).fadeIn('slow');
-    winner = 'O';
+    if (ourWinner === 'X') {
+      withButtons.css('background', 'rgba(222, 111, 180, 0.71)');
+      withButtons.css({ transform: 'scale(1.02)' });
+      let img = $('<img src="winnerX.gif">');
+      $('.winner').append(img);
+    } else if (ourWinner === 'O') {
+      withButtons.css('background', 'rgba(124, 175, 208, 0.73)');
+      withButtons.fadeOut(0);
+      withButtons.fadeIn('slow');
+      let img = $('<img src="winnerO.gif">');
+      $('.winner').append(img);
+    }
+    winner = ourWinner;
     setScore();
 }
 
@@ -140,45 +130,34 @@ function setNextPlayer(player) {
   }
 }
 
-// Function that checks all winning options for player X
-function isWinnerX() {
-  if ($('#button1').val() === 'X' && $('#button2').val() === 'X' && $('#button3').val() === 'X') {
-    xWon('#button1, #button2, #button3');
-  } else if ($('#button4').val() === 'X'&& $('#button5').val() === 'X' && $('#button6').val() === 'X') {
-    xWon('#button4, #button5, #button6');
-  } else if ($('#button7').val() === 'X' && $('#button8').val() === 'X' && $('#button9').val() === 'X') {
-    xWon('#button7, #button8, #button9');
-  } else if ($('#button1').val() === 'X' && $('#button5').val() === 'X' && $('#button9').val() === 'X') {
-    xWon('#button1, #button5, #button9');
-  } else if ($('#button3').val() === 'X' && $('#button5').val() === 'X' && $('#button7').val() === 'X') {
-    xWon('#button3, #button5, #button7');
-  } else if ($('#button2').val() === 'X' && $('#button5').val() === 'X' && $('#button8').val() === 'X') {
-    xWon('#button2, #button5, #button8');
-  } else if ($('#button1').val() === 'X' && $('#button4').val() === 'X' && $('#button7').val() === 'X') {
-    xWon('#button1, #button4, #button7');
-  } else if ($('#button3').val() === 'X' && $('#button6').val() === 'X' && $('#button9').val() === 'X') {
-    xWon('#button3, #button6, #button9');
+// Checks if the buttons has any of the same values
+function buttonsHasValue(buttons, value) {
+  for (let button of buttons) {
+    if ($(button).val() !== value) {
+      return false;
+    }
   }
+  return true;
 }
 
-// Function that checks all winning options for player O
-function isWinnerO() {
-  if ($('#button1').val() === 'O' && $('#button2').val() === 'O' && $('#button3').val() === 'O') {
-    oWon('#button1, #button2, #button3');
-  } else if ($('#button4').val() === 'O' && $('#button5').val() === 'O' && $('#button6').val() === 'O') {
-    oWon('#button4, #button5, #button6');
-  } else if ($('#button7').val() === 'O' && $('#button8').val() === 'O' && $('#button9').val() === 'O') {
-    oWon('#button7, #button8, #button9');
-  } else if ($('#button1').val() === 'O' && $('#button5').val() === 'O' && $('#button9').val() === 'O') {
-    oWon('#button1, #button5, #button9');
-  } else if ($('#button3').val() === 'O' && $('#button5').val() === 'O' && $('#button7').val() === 'O') {
-    oWon('#button3, #button5, #button7');
-  } else if ($('#button2').val() === 'O' && $('#button5').val() === 'O' && $('#button8').val() === 'O') {
-    oWon('#button2, #button5, #button8');
-  } else if ($('#button1').val() === 'O' && $('#button4').val() === 'O' && $('#button7').val() === 'O') {
-    oWon('#button1, #button4, #button7');
-  } else if ($('#button3').val() === 'O' && $('#button6').val() === 'O' && $('#button9').val() === 'O') {
-    oWon('#button3, #button6, #button9');
+// Function that checks all possible winning options for players and sets the winner
+function isWinner(player) {
+  let buttonRows = [
+    $('#button1, #button2, #button3'),
+    $('#button4, #button5, #button6'),
+    $('#button7, #button8, #button9'),
+    $('#button1, #button5, #button9'),
+    $('#button3, #button5, #button7'),
+    $('#button1, #button4, #button7'),
+    $('#button2, #button5, #button8'),
+    $('#button3, #button6, #button9'),
+  ];
+
+  for (let buttonRow of buttonRows) {
+    if (buttonsHasValue(buttonRow, player)) {
+      setWinner(player, buttonRow);
+      return;
+    }
   }
 }
 
